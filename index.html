@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html lang="de" data-page-version="2026-09-14-001">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -452,6 +452,28 @@
         lwCloseSidebar();
         lwOpenLegal(target);
       });
+    });
+  </script>
+  <script>
+    // Auto-Reload für iOS-Home-Bildschirm-PWA: verhindert, dass beim erneuten
+    // Öffnen eine gecachte Version (bfcache) statt des aktuellen Stands
+    // angezeigt wird — damit muss die App nicht mehr manuell neu angelegt werden.
+    window.addEventListener('pageshow', function (event) {
+      if (event.persisted) {
+        window.location.reload();
+      }
+    });
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState !== 'visible') return;
+      fetch(location.href.split('?')[0] + '?v=' + Date.now(), { cache: 'no-store' })
+        .then(function (res) { return res.text(); })
+        .then(function (html) {
+          var m = html.match(/data-page-version="([\w-]+)"/);
+          if (m && m[1] !== document.documentElement.dataset.pageVersion) {
+            window.location.reload();
+          }
+        })
+        .catch(function () {});
     });
   </script>
 </body>
