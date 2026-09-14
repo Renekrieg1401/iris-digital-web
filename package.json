@@ -1,0 +1,12 @@
+{
+  "name": "iris-web",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "serve": "python3 -m http.server 8791"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.0"
+  }
+}

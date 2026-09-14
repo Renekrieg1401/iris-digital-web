@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>IRIS Digital — Complexity Simplify</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#131B27">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="IRIS Digital">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          mint: '#A8BEDD',
+          lime: '#E6ACBE',
+          // FORMA-Farbübernahme (2026-09-14, René-Direktive, Cross-Silo-Zugriff
+          // autorisiert) — löst den zu blassen Light-Mode-Versuch ab, jetzt
+          // FORMAs echtes dunkles Standard-Theme (darkColors, DesignTokens.ts).
+          // Klassennamen bewusst beibehalten (Markup unverändert), nur Werte
+          // getauscht: charcoal=Seiten-BG (dunkel), surface=Karten-BG (dunkel).
+          charcoal: '#131B27',
+          surface: '#253144',
+          ink: '#FFFFFF',
+          slate: '#E0E0E0',
+          primaryDark: '#17273F',
+          primaryLight: '#7C93B8',
+          secondary: '#5B7290',
+          bg2: '#1B2535',
+          textFaint: '#C0C0C0',
+        },
+      },
+    },
+  };
+</script>
+<style>
+  /* v67.146 — Effekt-Familie aus iris-monitor: Electric-Border-Hover + Logo-Puls */
+  /* 2026-09-14 — FORMA-Dark-Theme-Übernahme: echtes FORMA-Standard-Theme (dunkel,
+     seit 2026-09-08), Neumorphismus verstärkt + .lw-badge auf echten
+     FORMA-Shimmer-Gradient (analog formaShimmerDark), s. forma/DesignTokens.ts. */
+  @keyframes lw-logo-breathe { 0%,100% { transform: scale(1); filter: drop-shadow(0 0 4px rgba(184,115,51,0.5)); } 50% { transform: scale(1.08); filter: drop-shadow(0 0 10px rgba(184,115,51,0.85)); } }
+  .lw-logo { transform-box: fill-box; transform-origin: center; animation: lw-logo-breathe 3.2s ease-in-out infinite; transition: filter .3s ease; }
+  .lw-logo:hover { filter: drop-shadow(0 0 14px rgba(184,115,51,1)) drop-shadow(0 0 5px rgba(232,195,158,0.7)); }
+  .lw-card {
+    position: relative;
+    overflow: hidden;
+    transition: transform .2s cubic-bezier(.22,1,.36,1), border-color .3s ease, box-shadow .3s ease;
+    transform-style: preserve-3d;
+    background: rgba(19,27,39,0.55);
+    border: 1px solid rgba(124,147,184,0.16) !important;
+    backdrop-filter: blur(20px);
+    box-shadow:
+      -6px -6px 10px rgba(124,147,184,0.22),
+       22px 22px 40px rgba(0,0,0,0.65);
+  }
+  .lw-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+    z-index: 1;
+  }
+  .lw-card:hover {
+    transform: perspective(600px) rotateX(4deg) translateY(-5px) scale(1.03);
+    border-color: #7C93B8 !important;
+    box-shadow:
+      -8px -8px 12px rgba(124,147,184,0.32),
+       26px 26px 46px rgba(0,0,0,0.80);
+  }
+  .lw-card:active { transform: scale(0.97); border-color: #7C93B8 !important; box-shadow: 0 4px 14px rgba(0,0,0,0.6); }
+  .lw-badge {
+    border: 1px solid rgba(124,147,184,0.3);
+    background: linear-gradient(90deg, #6B8FC7,#B8CBE8,#7C93B8,#B8CBE8,#6B8FC7,#B8CBE8,#7C93B8) !important;
+    background-size: 250% 100%;
+    animation: lw-badge-shimmer 4s linear infinite;
+    color: #16202C !important;
+    font-weight: 600;
+    box-shadow: -2px -2px 5px rgba(184,203,232,0.45), 4px 4px 10px rgba(0,0,0,0.7);
+  }
+  @keyframes lw-badge-shimmer { 0% { background-position: 0% 50%; } 100% { background-position: 250% 50%; } }
+
+  /* Header — echter FORMA-Gradient (gradientCareDark, forma/DesignTokens.ts)
+     als Hintergrundfläche + Mesh-Textur-Overlay + 3D-Schatten/Specular-Kante
+     (2026-09-14, René-Feedback nach erster Dark-Theme-Übernahme). */
+  .lw-hero {
+    position: relative; overflow: hidden;
+    background: linear-gradient(100deg, #2B4570, #17273F);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.75);
+  }
+  .lw-hero::before {
+    content: ''; position: absolute; inset: -20%; z-index: -1;
+    background: linear-gradient(120deg, #131B27, #1B2535, #2B4570, #131B27);
+    background-size: 300% 300%; opacity: 0.15;
+  }
+  .lw-hero::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+    z-index: 1;
+  }
+  .lw-hero h1 {
+    /* 2026-09-14 — FORMA-Dark-Theme: heller Textverlauf Weiß→Ink-Blau-Hell,
+       hoher Kontrast auf dunklem #131B27-Hero-Hintergrund. */
+    background: linear-gradient(90deg, #FFFFFF, #7C93B8);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    line-height: 1.25; padding-bottom: 0.1em; display: inline-block;
+  }
+  /* 2026-08-20 — Wortmarke + Tagline auf schmale, breit getrackte KI-Tech-Type
+     umgestellt (Referenz: lisa-digital.de Login-Screen, visuell nachempfunden,
+     kein Zugriff auf deren echtes CSS/Font-File). Nur Name + Slogan, kein Fließtext. */
+  .lw-techtype { font-family: 'Michroma', sans-serif; letter-spacing: 0.04em; }
+
+  /* Sidebar (FORMA-Stil) — Impressum/Datenschutz, product-design-Spec 2026-09-14 */
+  .lw-sidebar-toggle {
+    position: absolute; top: 1.25rem; left: 1.25rem; z-index: 20;
+    width: 44px; height: 44px; border-radius: 9999px;
+    background: rgba(19,27,39,0.55);
+    border: 1px solid rgba(124,147,184,0.16);
+    backdrop-filter: blur(20px);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    cursor: pointer; transition: border-color .3s ease, box-shadow .3s ease;
+    box-shadow: -3px -3px 6px rgba(124,147,184,0.22), 8px 8px 16px rgba(0,0,0,0.5);
+  }
+  .lw-sidebar-toggle span { width: 20px; height: 2px; background: #FFFFFF; border-radius: 2px; }
+  .lw-sidebar-toggle:hover { border-color: #7C93B8; }
+
+  .lw-sidebar {
+    position: fixed; top: 0; left: 0; height: 100vh; width: 280px; max-width: 85vw;
+    z-index: 100; transform: translateX(-100%);
+    transition: transform .3s cubic-bezier(.22,1,.36,1);
+    background: rgba(19,27,39,0.40);
+    backdrop-filter: blur(20px);
+    display: flex; flex-direction: column;
+    border-right: 1px solid rgba(124,147,184,0.16);
+    box-shadow: 22px 0 40px rgba(0,0,0,0.65);
+  }
+  .lw-sidebar.lw-sidebar--open { transform: translateX(0); }
+  .lw-sidebar::after {
+    content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 2px;
+    background: linear-gradient(180deg, transparent, rgba(255,255,255,0.5), transparent);
+  }
+  .lw-sidebar-brand {
+    display: flex; align-items: center; gap: .75rem; padding: 1.25rem 1rem;
+    background: linear-gradient(100deg, #2B4570, #17273F);
+  }
+
+  .lw-sidebar-backdrop {
+    position: fixed; inset: 0; z-index: 90;
+    background: rgba(0,0,0,0.45);
+    opacity: 0; pointer-events: none;
+    transition: opacity .3s ease;
+  }
+  .lw-sidebar-backdrop.lw-sidebar-backdrop--visible { opacity: 1; pointer-events: auto; }
+
+  .lw-sidebar-close {
+    min-width: 44px; min-height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    background: none; border: none; color: #FFFFFF; font-size: 1.25rem; cursor: pointer;
+    margin-left: auto;
+  }
+
+  .lw-sidebar-nav { display: flex; flex-direction: column; gap: .5rem; padding: 1rem; }
+  .lw-sidebar-navitem {
+    border-radius: 9999px; padding: .6rem 1rem; text-align: left;
+    background: transparent; border: 1px solid rgba(124,147,184,0.16);
+    color: #E0E0E0; font-weight: 600; font-size: .875rem;
+    transition: border-color .2s ease, background .2s ease, color .2s ease;
+  }
+  .lw-sidebar-navitem.lw-sidebar-navitem--active {
+    border-color: #7C93B8;
+    background: linear-gradient(90deg, #7A8FB2,#9DB0CC,#7C93B8,#9DB0CC,#7A8FB2);
+    background-size: 250% 100%;
+    color: #16202C;
+  }
+
+  .lw-legal-hidden { display: none; }
+  .lw-legal-section {
+    position: fixed; inset: 0; z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    padding: 1.5rem;
+  }
+  .lw-legal-section.lw-legal-hidden { display: none; }
+  .lw-legal-section .lw-card { max-height: 80vh; overflow-y: auto; position: relative; }
+  .lw-legal-backdrop {
+    position: fixed; inset: 0; z-index: 190;
+    background: rgba(0,0,0,0.55);
+    opacity: 0; pointer-events: none;
+    transition: opacity .3s ease;
+  }
+  .lw-legal-backdrop.lw-legal-backdrop--visible { opacity: 1; pointer-events: auto; }
+  .lw-legal-close {
+    min-width: 44px; min-height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    background: none; border: none; color: #FFFFFF; font-size: 1.25rem; cursor: pointer;
+    position: absolute; top: .5rem; right: .5rem;
+  }
+</style>
+</head>
+<body class="bg-charcoal text-[#FFFFFF] antialiased">
+
+  <!-- Sidebar (FORMA-Stil) — Impressum/Datenschutz -->
+  <aside id="lw-sidebar" class="lw-sidebar" aria-hidden="true">
+    <div class="lw-sidebar-brand">
+      <svg width="32" height="32" viewBox="0 0 28 28" role="img" aria-label="IRIS Digital Logo — Kamera-Iris-Blende in Bronze, ohne eigenen Hintergrund" class="lw-logo">
+        <defs>
+          <linearGradient id="irisMetalSidebar" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#6B4423"/><stop offset="16%" stop-color="#B87333"/>
+            <stop offset="34%" stop-color="#6B4423"/><stop offset="50%" stop-color="#E8C39E"/>
+            <stop offset="64%" stop-color="#B87333"/><stop offset="82%" stop-color="#6B4423"/>
+            <stop offset="100%" stop-color="#E8C39E"/>
+          </linearGradient>
+        </defs>
+        <g fill="url(#irisMetalSidebar)">
+          <rect x="13" y="2.5" width="2" height="9" rx="1" transform="rotate(0 14 14)"/>
+          <rect x="13" y="2.5" width="2" height="9" rx="1" transform="rotate(60 14 14)"/>
+          <rect x="13" y="2.5" width="2" height="9" rx="1" transform="rotate(120 14 14)"/>
+          <rect x="13" y="2.5" width="2" height="9" rx="1" transform="rotate(180 14 14)"/>
+          <rect x="13" y="2.5" width="2" height="9" rx="1" transform="rotate(240 14 14)"/>
+          <rect x="13" y="2.5" width="2" height="9" rx="1" transform="rotate(300 14 14)"/>
+        </g>
+        <circle cx="14" cy="14" r="3.2" fill="#E8C39E"/>
+      </svg>
+      <span class="lw-techtype" style="color:#A8BEDD;font-size:0.9rem;">IRIS Digital</span>
+      <button id="lw-sidebar-close" class="lw-sidebar-close" aria-label="Navigation schließen">✕</button>
+    </div>
+    <nav class="lw-sidebar-nav">
+      <button class="lw-sidebar-navitem" data-target="lw-legal-impressum">Impressum</button>
+      <button class="lw-sidebar-navitem" data-target="lw-legal-datenschutz">Datenschutz</button>
+    </nav>
+  </aside>
+  <div id="lw-sidebar-backdrop" class="lw-sidebar-backdrop"></div>
+
+  <!-- Hero -->
+  <header class="lw-hero flex flex-col items-center justify-center text-center px-6 py-10">
+    <button id="lw-sidebar-toggle" class="lw-sidebar-toggle" aria-label="Navigation öffnen" aria-expanded="false" aria-controls="lw-sidebar"><span></span><span></span><span></span></button>
+    <svg width="52" height="52" viewBox="0 0 28 28" role="img" aria-label="IRIS Digital Logo — Kamera-Iris-Blende in Bronze, ohne eigenen Hintergrund" class="mb-6 lw-logo">
+      <defs>
+        <linearGradient id="irisMetal" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#6B4423"/><stop offset="16%" stop-color="#B87333"/>
+          <stop offset="34%" stop-color="#6B4423"/><stop offset="50%" stop-color="#E8C39E"/>
+          <stop offset="64%" stop-color="#B87333"/><stop offset="82%" stop-color="#6B4423"/>
+          <stop offset="100%" stop-color="#E8C39E"/>
+        </linearGradient>
+      </defs>
+      <g fill="url(#irisMetal)">
+        <rect x="13" y="2.5" width="2" height="9" rx="1" transform="rotate(0 14 14)"/>
+        <rect x="13" y="2.5" width="2" height="9" rx="1" transform="rotate(60 14 14)"/>
+        <rect x="13" y="2.5" width="2" height="9" rx="1" transform="rotate(120 14 14)"/>
+        <rect x="13" y="2.5" width="2" height="9" rx="1" transform="rotate(180 14 14)"/>
+        <rect x="13" y="2.5" width="2" height="9" rx="1" transform="rotate(240 14 14)"/>
+        <rect x="13" y="2.5" width="2" height="9" rx="1" transform="rotate(300 14 14)"/>
+      </g>
+      <circle cx="14" cy="14" r="3.2" fill="#E8C39E"/>
+    </svg>
+    <h1 class="lw-techtype text-4xl md:text-6xl font-bold mb-4">IRIS Digital</h1>
+    <p class="lw-techtype text-[#E6ACBE] text-xl md:text-2xl font-medium">Complexity Simplify</p>
+  </header>
+
+  <!-- Was ist IRIS -->
+  <section class="w-full px-6 md:px-16 py-16 border-t border-[rgba(124,147,184,0.3)]">
+    <h2 class="text-2xl font-bold text-[#FFFFFF] mb-4">Was ist IRIS?</h2>
+    <p class="font-medium mb-3">
+      IRIS steht für <span class="text-mint font-bold">I</span>ntegrierte
+      <span class="text-mint font-bold">R</span>essourcen für
+      <span class="text-mint font-bold">I</span>ndividuelle
+      <span class="text-mint font-bold">S</span>orgfalt.
+    </p>
+    <p class="text-[#E0E0E0] leading-relaxed">
+      IRIS Digital entwickelt digitale Anwendungen für den Pflege- und
+      Sozialbereich, die komplexe Prozesse — Pflegerecht, Dokumentation,
+      Reformwissen, Datenanalyse — lösungsorientiert integrieren und für den
+      Alltag zugänglich machen. Complexity Simplify: aus Bürokratie und
+      Fachjargon wird verständliche, nutzbare Unterstützung.
+    </p>
+  </section>
+
+  <!-- App-Ökosystem -->
+  <section class="w-full px-6 md:px-16 py-16">
+    <h2 class="text-2xl font-bold text-center mb-2">App-Ökosystem</h2>
+    <p class="text-[#E0E0E0] text-center mb-10 text-sm">
+      Kein App Store, kein Play Store: Alle Apps sind reine Abo-Downloads direkt
+      über IRIS — noch in aktiver Entwicklung, Aktivierung folgt nach Launch.
+    </p>
+    <div class="grid md:grid-cols-2 gap-6">
+
+      <article class="bg-surface rounded-xl p-6 border lw-card">
+        <h3 class="text-lg font-semibold text-mint mb-2">ADEA</h3>
+        <p class="font-medium mb-2">„Begleitung für pflegende Angehörige bei Demenz.“</p>
+        <p class="text-[#E0E0E0] text-sm mb-4">Verständliche Unterstützung im Pflegealltag — verankert in Art. 6 der Pflege-Charta (Kommunikation &amp; Teilhabe).</p>
+        <span class="inline-block text-xs px-3 py-1 rounded-full lw-badge">In Entwicklung — Download künftig direkt über IRIS (kein Store)</span>
+      </article>
+
+      <article class="bg-surface rounded-xl p-6 border lw-card">
+        <h3 class="text-lg font-semibold text-mint mb-2">Care-Diary</h3>
+        <p class="font-medium mb-2">„Präzise Dokumentation für echte Entlastung.“</p>
+        <p class="text-[#E0E0E0] text-sm mb-4">Professionelle MDK-Vorbereitung, lückenlos und nachvollziehbar.</p>
+        <span class="inline-block text-xs px-3 py-1 rounded-full lw-badge">In Entwicklung — Download künftig direkt über IRIS (kein Store)</span>
+      </article>
+
+      <article class="bg-surface rounded-xl p-6 border lw-card">
+        <h3 class="text-lg font-semibold text-mint mb-2">Care Reform Navigator</h3>
+        <p class="font-medium mb-2">„SGB XI 2026 verstehen &amp; nutzen.“</p>
+        <p class="text-[#E0E0E0] text-sm mb-4">
+          Pflegegrad-Vorausschätzung nach NBA-Modulgewichtung — Modul 4 (Selbstversorgung)
+          zählt mit 40&nbsp;% am stärksten in die Einstufung hinein.
+        </p>
+        <span class="inline-block text-xs px-3 py-1 rounded-full lw-badge">In Entwicklung — Download künftig direkt über IRIS (kein Store)</span>
+      </article>
+
+      <article class="bg-surface rounded-xl p-6 border flex flex-col lw-card">
+        <h3 class="text-lg font-semibold text-mint mb-2">CareInsight</h3>
+        <p class="font-medium mb-2">„die Seite die Hilft“</p>
+        <p class="text-[#E0E0E0] text-sm mb-4">Analytics &amp; Insights für Pflege-Entscheidungen.</p>
+        <a href="https://careinsight.de" target="_blank" rel="noopener noreferrer" class="mt-auto text-[#E6ACBE] text-sm underline underline-offset-2">careinsight.de →</a>
+        <span class="text-xs text-[#E0E0E0]/70 mt-1">Domain aktuell nicht erreichbar (DNS, Stand 2026-07-30) — Link folgt Zieladresse aus der Vorgabe, ungeprüft live.</span>
+      </article>
+
+      <article class="bg-surface rounded-xl p-6 border lw-card">
+        <h3 class="text-lg font-semibold text-mint mb-2">Clariva Caresolution</h3>
+        <p class="font-medium mb-2">Für Pflegefachpersonen.</p>
+        <p class="text-[#E0E0E0] text-sm mb-4">
+          Eigenständige Care-Solution, gezielt für professionell Pflegende —
+          kein allgemeiner Consumer-Download.
+        </p>
+        <span class="inline-block text-xs px-3 py-1 rounded-full lw-badge">Nur per Bestell-Link · 4,99 €/Monat · In Entwicklung</span>
+      </article>
+
+    </div>
+  </section>
+
+  <footer class="flex flex-col items-center justify-center gap-2 text-center text-[#E0E0E0] text-xs py-10 border-t border-[rgba(124,147,184,0.3)]">
+    <svg width="24" height="24" viewBox="0 0 28 28" role="img" aria-label="IRIS Digital Logo — Kamera-Iris-Blende in Bronze, ohne eigenen Hintergrund">
+      <defs>
+        <linearGradient id="irisMetalFooter" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#6B4423"/><stop offset="16%" stop-color="#B87333"/>
+          <stop offset="34%" stop-color="#6B4423"/><stop offset="50%" stop-color="#E8C39E"/>
+          <stop offset="64%" stop-color="#B87333"/><stop offset="82%" stop-color="#6B4423"/>
+          <stop offset="100%" stop-color="#E8C39E"/>
+        </linearGradient>
+      </defs>
+      <g fill="url(#irisMetalFooter)">
+        <rect x="13" y="2.5" width="2" height="9" rx="1" transform="rotate(0 14 14)"/>
+        <rect x="13" y="2.5" width="2" height="9" rx="1" transform="rotate(60 14 14)"/>
+        <rect x="13" y="2.5" width="2" height="9" rx="1" transform="rotate(120 14 14)"/>
+        <rect x="13" y="2.5" width="2" height="9" rx="1" transform="rotate(180 14 14)"/>
+        <rect x="13" y="2.5" width="2" height="9" rx="1" transform="rotate(240 14 14)"/>
+        <rect x="13" y="2.5" width="2" height="9" rx="1" transform="rotate(300 14 14)"/>
+      </g>
+      <circle cx="14" cy="14" r="3.2" fill="#E8C39E"/>
+    </svg>
+    IRIS Digital
+  </footer>
+
+  <!-- Rechtstext-Overlays (initial ausgeblendet, via Sidebar-Nav erreichbar) -->
+  <div id="lw-legal-backdrop" class="lw-legal-backdrop"></div>
+  <section id="lw-legal-impressum" class="lw-legal-section lw-legal-hidden">
+    <div class="lw-card" style="max-width:640px;margin:0 auto;padding:2rem;">
+      <button class="lw-legal-close" aria-label="Schließen">✕</button>
+      <h2 class="text-xl font-bold mb-4" style="color:#FFFFFF;">Impressum</h2>
+      <p class="text-[#E0E0E0] text-sm mb-3"><strong style="color:#FFFFFF;">Angaben gemäß § 5 TMG</strong></p>
+      <p class="text-[#E0E0E0] text-sm mb-3">IRIS Digital<br>Inhaber: René Krieg<br>Hohenfelsstraße 34<br>35232 Dautphetal<br>Deutschland</p>
+      <p class="text-[#E0E0E0] text-sm mb-3"><strong style="color:#FFFFFF;">Kontakt</strong><br>E-Mail: r.krieg.home@gmail.com</p>
+      <p class="text-[#E0E0E0] text-sm mb-3">Umsatzsteuer-Identifikationsnummer: entfällt (keine umsatzsteuerliche Erfassung bekannt/hinterlegt)<br>Handelsregistereintrag: entfällt (Einzelunternehmen, keine Eintragung bekannt)</p>
+      <p class="text-[#E0E0E0] text-sm mb-3">Verantwortlich für den Inhalt nach § 18 Abs. 2 Medienstaatsvertrag (MStV): entfällt — diese Seite enthält keine journalistisch-redaktionellen Inhalte mit Aktualitätsanspruch, sondern ausschließlich werbliche/informative Produktübersicht.</p>
+      <p class="text-[#E0E0E0] text-sm mb-3"><strong style="color:#FFFFFF;">EU-Streitschlichtung</strong><br>Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: https://ec.europa.eu/consumers/odr/. Über diese Website selbst werden keine Verträge abgeschlossen (reine Produktübersicht, kein Checkout); wir sind nicht verpflichtet und nicht bereit, an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
+      <p class="text-[#E0E0E0] text-sm mb-3"><strong style="color:#FFFFFF;">Haftung für Inhalte</strong><br>Als Diensteanbieter sind wir gemäß § 7 Abs. 1 TMG für eigene Inhalte auf dieser Seite nach den allgemeinen Gesetzen verantwortlich. Nach §§ 8–10 TMG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen.</p>
+    </div>
+  </section>
+  <section id="lw-legal-datenschutz" class="lw-legal-section lw-legal-hidden">
+    <div class="lw-card" style="max-width:640px;margin:0 auto;padding:2rem;">
+      <button class="lw-legal-close" aria-label="Schließen">✕</button>
+      <h2 class="text-xl font-bold mb-4" style="color:#FFFFFF;">Datenschutzerklärung</h2>
+      <p class="text-[#E0E0E0] text-sm mb-3"><strong style="color:#FFFFFF;">1. Verantwortlicher</strong><br>IRIS Digital, Inhaber René Krieg, Hohenfelsstraße 34, 35232 Dautphetal, E-Mail: r.krieg.home@gmail.com.</p>
+      <p class="text-[#E0E0E0] text-sm mb-3"><strong style="color:#FFFFFF;">2. Allgemeines</strong><br>Diese Seite ist eine reine Informations-/Übersichtsseite (kein Abo-Produkt, kein Kundenkonto, kein Kontaktformular). Es werden keine Cookies gesetzt und keine Nutzerprofile gebildet.</p>
+      <p class="text-[#E0E0E0] text-sm mb-3"><strong style="color:#FFFFFF;">3. Server-Logfiles</strong><br>Beim Aufruf dieser Seite verarbeitet der Hosting-Dienstleister automatisch technische Zugriffsdaten (u. a. IP-Adresse, Datum/Uhrzeit, aufgerufene Datei, Browsertyp), wie es bei jedem Webseitenaufruf technisch notwendig ist. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an technisch fehlerfreier Bereitstellung).</p>
+      <p class="text-[#E0E0E0] text-sm mb-3"><strong style="color:#FFFFFF;">4. Google Fonts (externe Schriftart)</strong><br>Diese Seite lädt die Schriftart „Michroma" extern über Google Fonts (fonts.googleapis.com/fonts.gstatic.com), Anbieter Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland. Beim Seitenaufruf wird dazu eine Verbindung zu Google-Servern aufgebaut, wobei die IP-Adresse der besuchenden Person an Google übertragen wird. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (einheitliche Darstellung). Details: Googles Datenschutzerklärung unter https://policies.google.com/privacy.</p>
+      <p class="text-[#E0E0E0] text-sm mb-3"><strong style="color:#FFFFFF;">5. Tailwind CSS (externes Skript)</strong><br>Zur Darstellung wird das CSS-Framework Tailwind über ein extern gehostetes Skript (cdn.tailwindcss.com) nachgeladen. Dabei wird technisch notwendig die IP-Adresse an den jeweiligen CDN-Betreiber übertragen (Server-Logfile-Ebene, kein Tracking/Cookie). Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.</p>
+      <p class="text-[#E0E0E0] text-sm mb-3"><strong style="color:#FFFFFF;">6. Pageview-Zähler (technischer Hinweis, keine Datenverarbeitung bei echten Besucher:innen)</strong><br>Der Quellcode enthält einen JavaScript-Aufruf, der beim Seitenaufruf einen Zählimpuls an https://localhost:4100/api/events sendet. Klarstellung: „localhost" bezeichnet immer den eigenen Rechner des jeweiligen Browsers — bei einer echten Besucherin/einem echten Besucher zeigt dieser Aufruf auf deren/dessen eigenes Gerät, nicht auf einen Server von IRIS Digital. Es existiert dort kein Dienst, der den Aufruf entgegennimmt; die Anfrage schlägt fehl und wird verworfen. Es werden dadurch keine personenbezogenen Daten an IRIS Digital oder Dritte übertragen. Der Mechanismus ist ausschließlich in einer lokalen Entwicklungsumgebung wirksam.</p>
+      <p class="text-[#E0E0E0] text-sm mb-3"><strong style="color:#FFFFFF;">7. Externe Links</strong><br>Diese Seite verlinkt auf externe Angebote (z. B. careinsight.de). Für die Inhalte und den Datenschutz dieser fremden Seiten sind ausschließlich deren Betreiber verantwortlich.</p>
+      <p class="text-[#E0E0E0] text-sm mb-3"><strong style="color:#FFFFFF;">8. Ihre Rechte</strong><br>Sie haben das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) sowie Widerspruch (Art. 21) gegenüber dem Verantwortlichen unter obiger E-Mail-Adresse. Zudem besteht ein Beschwerderecht bei einer Datenschutzaufsichtsbehörde.</p>
+    </div>
+  </section>
+
+  <script>
+    // v67.147: Minimal-Pageview-Beacon an iris-monitor — nur Seitenaufruf-
+    // Zähler, keine personenbezogenen Daten. Best-effort, läuft nur lokal
+    // (kein Hosting), scheitert für echte Besucher:innen still.
+    fetch('https://localhost:4100/api/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ app: 'lisaWeb', events: [{ type: 'VisitEvent', subtype: 'pageview', ts: new Date().toISOString(), is_test: location.hostname === 'localhost' }] }),
+      keepalive: true,
+    }).catch(() => {});
+  </script>
+
+  <script>
+    // Sidebar-Toggle (FORMA-Stil) — Impressum/Datenschutz-Nav
+    const lwSidebar = document.getElementById('lw-sidebar');
+    const lwBackdrop = document.getElementById('lw-sidebar-backdrop');
+    const lwToggleBtn = document.getElementById('lw-sidebar-toggle');
+    const lwCloseBtn = document.getElementById('lw-sidebar-close');
+    function lwOpenSidebar() {
+      lwSidebar.classList.add('lw-sidebar--open');
+      lwBackdrop.classList.add('lw-sidebar-backdrop--visible');
+      lwSidebar.setAttribute('aria-hidden', 'false');
+      lwToggleBtn.setAttribute('aria-expanded', 'true');
+    }
+    function lwCloseSidebar() {
+      lwSidebar.classList.remove('lw-sidebar--open');
+      lwBackdrop.classList.remove('lw-sidebar-backdrop--visible');
+      lwSidebar.setAttribute('aria-hidden', 'true');
+      lwToggleBtn.setAttribute('aria-expanded', 'false');
+    }
+    lwToggleBtn.addEventListener('click', lwOpenSidebar);
+    lwCloseBtn.addEventListener('click', lwCloseSidebar);
+    lwBackdrop.addEventListener('click', lwCloseSidebar);
+
+    // Legal-Overlays (Impressum/Datenschutz) — echtes Modal statt Scroll-Anker
+    const lwLegalBackdrop = document.getElementById('lw-legal-backdrop');
+    let lwActiveLegal = null;
+    function lwOpenLegal(target) {
+      target.classList.remove('lw-legal-hidden');
+      lwLegalBackdrop.classList.add('lw-legal-backdrop--visible');
+      document.body.style.overflow = 'hidden';
+      lwActiveLegal = target;
+    }
+    function lwCloseLegal() {
+      if (!lwActiveLegal) return;
+      lwActiveLegal.classList.add('lw-legal-hidden');
+      lwLegalBackdrop.classList.remove('lw-legal-backdrop--visible');
+      document.body.style.overflow = '';
+      lwActiveLegal = null;
+    }
+    lwLegalBackdrop.addEventListener('click', lwCloseLegal);
+    document.querySelectorAll('.lw-legal-close').forEach((btn) => {
+      btn.addEventListener('click', lwCloseLegal);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      if (lwActiveLegal) { lwCloseLegal(); return; }
+      lwCloseSidebar();
+    });
+    document.querySelectorAll('.lw-sidebar-navitem').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.lw-sidebar-navitem').forEach((b) => b.classList.remove('lw-sidebar-navitem--active'));
+        btn.classList.add('lw-sidebar-navitem--active');
+        const target = document.getElementById(btn.dataset.target);
+        lwCloseSidebar();
+        lwOpenLegal(target);
+      });
+    });
+  </script>
+</body>
+</html>
