@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>IRIS Digital — Complexity Simplify</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#131B27">
+<meta name="theme-color" content="#2B4570">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -25,14 +25,14 @@
           // FORMAs echtes dunkles Standard-Theme (darkColors, DesignTokens.ts).
           // Klassennamen bewusst beibehalten (Markup unverändert), nur Werte
           // getauscht: charcoal=Seiten-BG (dunkel), surface=Karten-BG (dunkel).
-          charcoal: '#131B27',
-          surface: '#253144',
+          charcoal: '#2B4570',
+          surface: '#46608C',
           ink: '#FFFFFF',
           slate: '#E0E0E0',
           primaryDark: '#17273F',
           primaryLight: '#7C93B8',
           secondary: '#5B7290',
-          bg2: '#1B2535',
+          bg2: '#3A5680',
           textFaint: '#C0C0C0',
         },
       },
@@ -52,7 +52,7 @@
     overflow: hidden;
     transition: transform .2s cubic-bezier(.22,1,.36,1), border-color .3s ease, box-shadow .3s ease;
     transform-style: preserve-3d;
-    background: rgba(19,27,39,0.55);
+    background: rgba(43,69,112,0.55);
     border: 1px solid rgba(124,147,184,0.16) !important;
     backdrop-filter: blur(20px);
     box-shadow:
@@ -95,7 +95,7 @@
   }
   .lw-hero::before {
     content: ''; position: absolute; inset: -20%; z-index: -1;
-    background: linear-gradient(120deg, #131B27, #1B2535, #2B4570, #131B27);
+    background: linear-gradient(120deg, #2B4570, #3A5680, #46608C, #2B4570);
     background-size: 300% 300%; opacity: 0.15;
   }
   .lw-hero::after {
@@ -105,8 +105,8 @@
   }
   .lw-hero h1 {
     /* 2026-09-14 — FORMA-Dark-Theme: heller Textverlauf Weiß→Ink-Blau-Hell,
-       hoher Kontrast auf dunklem #131B27-Hero-Hintergrund. */
-    background: linear-gradient(90deg, #FFFFFF, #7C93B8);
+       hoher Kontrast auf dunklem #2B4570-Hero-Hintergrund. */
+    background: linear-gradient(90deg, #FFFFFF, #A8BEDD);
     -webkit-background-clip: text; background-clip: text; color: transparent;
     line-height: 1.25; padding-bottom: 0.1em; display: inline-block;
   }
@@ -119,7 +119,7 @@
   .lw-sidebar-toggle {
     position: absolute; top: 1.25rem; left: 1.25rem; z-index: 20;
     width: 44px; height: 44px; border-radius: 9999px;
-    background: rgba(19,27,39,0.55);
+    background: rgba(43,69,112,0.55);
     border: 1px solid rgba(124,147,184,0.16);
     backdrop-filter: blur(20px);
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
@@ -133,7 +133,7 @@
     position: fixed; top: 0; left: 0; height: 100vh; width: 280px; max-width: 85vw;
     z-index: 100; transform: translateX(-100%);
     transition: transform .3s cubic-bezier(.22,1,.36,1);
-    background: rgba(19,27,39,0.40);
+    background: rgba(43,69,112,0.40);
     backdrop-filter: blur(20px);
     display: flex; flex-direction: column;
     border-right: 1px solid rgba(124,147,184,0.16);
